@@ -5,7 +5,7 @@ import math
 import argparse
 import json
 
-def generateGraph(vertices=5,edges=15,seed=93391):   
+def generateGraph(vertices=5,edges=15,seed=93391):#TODO: THIS CAN GENERATE ISOLATED NODES 
     if vertices>81:
         raise ValueError("9x9 Grid cannot fit this many vertices")
     if edges<vertices-1:

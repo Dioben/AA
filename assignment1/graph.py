@@ -22,9 +22,6 @@ def generateGraph(vertices=5,edgelimit=15,seed=93391):
     random.shuffle(positions)
     assignments = {}
 
-    edges = {}
-    covered = set()
-
     for x in range(1,vertices+1):
         try:
             position = positions.pop(0)
@@ -36,9 +33,10 @@ def generateGraph(vertices=5,edgelimit=15,seed=93391):
     graph.add_nodes_from(assignments)
     nx.set_node_attributes(graph,assignments)
 
+    edges = {}
     #ensure connectivity, as far as I can tell will always spawn N-1 edges
     components = list(nx.connected_components(graph))
-    while len(components)!=1:
+    while len(components)!=1:#TODO: THIS IS REPLACEABLE WITH A FOR LOOP
         edge = (random.choice(sorted(components[0])),random.choice(sorted(components[1]))) #sorting for consistent generation
         graph.add_edge(edge[0],edge[1])
         edges[edge]= {"weight":eucdist(assignments[edge[0]]['pos'],assignments[edge[1]]['pos']),"color":"black"}

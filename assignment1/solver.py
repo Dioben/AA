@@ -10,24 +10,25 @@ def greedy(graph):
     seen = 0
     adds = 0
     sortededges = sorted(graph.edges(),key=lambda x:graph.edges[x]['weight'])
-    sortededges = [(x,) for x in sortededges]
-    states = sortededges[:]
+    sortededges_as_tuples = [(x,) for x in sortededges]
+    states = sortededges_as_tuples[:]
     done = False
     while not done: #will always choose shortest length solution, could also choose best one if I used bisection.insort
         solution = states.pop(0)
-        states+=[solution + x for x in sortededges if x not in solution]
+        most_costly_edge = solution[-1]
         seen+=1
+        states+=[solution + x for x in sortededges_as_tuples[sortededges.index(most_costly_edge)+1:]] #there is no point adding cheaper edges as that state has already been added
         captured_nodes = set()
-        for edge in solution:
-            for edge in solution:
-                captured_nodes.add(edge[0])
-                captured_nodes.add(edge[1])
-            missing_edges = set(graph.edges()).difference(solution)
-            for edge in list(missing_edges):
-                if edge[0] in captured_nodes or edge[1] in captured_nodes:
-                    missing_edges.remove(edge)
-                if not missing_edges:
-                    done = True
+        for edge in solution:#compute nodes we have attached to
+            captured_nodes.add(edge[0])
+            captured_nodes.add(edge[1])
+
+        missing_edges = set(graph.edges()).difference(solution) #edges we must be adjacent to
+        for edge in list(missing_edges):
+            if edge[0] in captured_nodes or edge[1] in captured_nodes: #check for adjacency
+                missing_edges.remove(edge)
+            if not missing_edges:
+                done = True
     for edge in solution:#just for graphic purposes
         graph.edges[edge]['color']="red"
     return graph,solution,seen,adds

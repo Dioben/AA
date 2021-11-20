@@ -34,14 +34,20 @@ def generateGraph(vertices=5,edgelimit=15,seed=93391):
     nx.set_node_attributes(graph,assignments)
 
     edges = {}
-    #ensure connectivity, as far as I can tell will always spawn N-1 edges
-    components = list(nx.connected_components(graph))
-    while len(components)!=1:#TODO: THIS IS REPLACEABLE WITH A FOR LOOP
-        edge = (random.choice(sorted(components[0])),random.choice(sorted(components[1]))) #sorting for consistent generation
-        graph.add_edge(edge[0],edge[1])
-        edges[edge]= {"weight":eucdist(assignments[edge[0]]['pos'],assignments[edge[1]]['pos']),"color":"black"}
-        components = list(nx.connected_components(graph))
+
+    components = [(x,)for x in range(1,vertices+1)]
+    for _ in range(vertices-1): #generate a fully connected graph using N-1 edges
+        random.shuffle(components)
+        chosen1 = components.pop(0)
+        chosen2 = components.pop(0)
+        components.append(chosen1+chosen2)
+        edge1 = random.choice(chosen1)
+        edge2 = random.choice(chosen2)
+        graph.add_edge(edge1,edge2)
+        edges[(edge1,edge2)] = {"weight":eucdist(assignments[edge1]['pos'],assignments[edge2]['pos']),"color":"black"}
     
+    
+    #complement if necessary
     if len(edges)<edgelimit:
         possedges = {(x,y) for x in graph.nodes for y in graph.nodes if x<y}
         possedges=possedges.difference(edges.keys())
@@ -51,7 +57,7 @@ def generateGraph(vertices=5,edgelimit=15,seed=93391):
             edge = possedges.pop(index)
             graph.add_edge(edge[0],edge[1])
             edges[edge]= {"weight":eucdist(assignments[edge[0]]['pos'],assignments[edge[1]]['pos']),"color":"black"}
-    #complement if necessary
+    
     nx.set_edge_attributes(graph,edges)
     return graph
     
@@ -114,4 +120,3 @@ if __name__ =="__main__":
     f = open(args.output,"w")
     f.write(json.dumps(graph_export))
     f.close()
-

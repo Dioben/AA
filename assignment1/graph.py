@@ -80,7 +80,8 @@ def generateDrawings(graph):
     pos=nx.get_node_attributes(graph,'pos')
     weights = {x:round(y,2) for x,y in nx.get_edge_attributes(graph,"weight").items()}
     weightlist = [.5*weights[x] for x in graph.edges()]#halved because I think it'll look better
-    colors = [graph.edges[x]['color'] for x in graph.edges()]
+    colored = [x for x in graph.edges() if graph.edges[x]['color']!="black"]
+    others = [x for x in graph.edges if x not in colored]
     subax1 = plt.subplot(121)
     subax1.set_xlim(1,9)
     subax1.set_ylim(1,9)
@@ -102,8 +103,9 @@ def generateDrawings(graph):
 
     nx.draw_networkx_nodes(graph,pos)
     nx.draw_networkx_labels(graph,pos,font_weight="bold")
-    nx.draw_networkx_edges(graph,pos,width=weightlist,edge_color=colors)
     nx.draw_networkx_edge_labels(graph,pos,edge_labels=weights,font_size=7)
+    nx.draw_networkx_edges(graph,pos,width=weightlist,edgelist=others)
+    nx.draw_networkx_edges(graph,pos,width=weightlist,edge_color="red",edgelist=colored)
     plt.show()
 
 if __name__ =="__main__":

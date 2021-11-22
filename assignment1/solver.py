@@ -12,11 +12,10 @@ def greedy(graph):
     sortededges_as_tuples = [(x,) for x in sortededges]
     states = sortededges_as_tuples[:]
     done = False
-    while not done: #will always choose shortest length solution, could also choose best one if I used bisection.insort
+    while True: #will always choose shortest length solution, could also choose best one if I used bisection.insort
         solution = states.pop(0)
         most_costly_edge = solution[-1]
         seen+=1
-        states+=[solution + x for x in sortededges_as_tuples[sortededges.index(most_costly_edge)+1:]] #there is no point adding cheaper edges as that state has already been added
         captured_nodes = set()
         for edge in solution:#compute nodes we have attached to
             captured_nodes.add(edge[0])
@@ -28,6 +27,12 @@ def greedy(graph):
                 missing_edges.remove(edge)
             if not missing_edges:
                 done = True
+        if done:
+            break
+        #there is no point adding cheaper edges as that state has already been added
+        #there is no point adding edges that do not contribute new nodes
+        states+=[solution + x for x in sortededges_as_tuples[sortededges.index(most_costly_edge)+1:] if x[0][0] not in captured_nodes or x[0][1] not in captured_nodes]
+
     for edge in solution:#just for graphic purposes
         graph.edges[edge]['color']="red"
     return graph,solution,seen,seen+len(states)

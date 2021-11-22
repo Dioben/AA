@@ -8,7 +8,6 @@ import time
 
 def greedy(graph):
     seen = 0
-    adds = 0
     sortededges = sorted(graph.edges(),key=lambda x:graph.edges[x]['weight'])
     sortededges_as_tuples = [(x,) for x in sortededges]
     states = sortededges_as_tuples[:]
@@ -31,7 +30,7 @@ def greedy(graph):
                 done = True
     for edge in solution:#just for graphic purposes
         graph.edges[edge]['color']="red"
-    return graph,solution,seen,adds
+    return graph,solution,seen,seen+len(states)
 
 def exhaustive(graph):
     seen = 0

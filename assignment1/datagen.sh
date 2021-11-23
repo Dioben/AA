@@ -1,6 +1,6 @@
 #!/bin/bash
 rm -f results.csv
-echo "nodes,edges,solution method,solutions seen, arithmetic adds,time" >>results.csv
+echo "nodes,edges,solution method,solutions seen,adds,solution cost,time" >>results.csv
 for nodes in {3..10}
 do
 minnodes=$((nodes-1))

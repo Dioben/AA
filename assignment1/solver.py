@@ -8,6 +8,7 @@ import time
 
 def greedy(graph):
     seen = 0
+    adds=0
     sortededges = sorted(graph.edges(),key=lambda x:graph.edges[x]['weight'])
     sortededges_as_tuples = [(x,) for x in sortededges]
     states = sortededges_as_tuples[:]
@@ -20,7 +21,7 @@ def greedy(graph):
         for edge in solution:#compute nodes we have attached to
             captured_nodes.add(edge[0])
             captured_nodes.add(edge[1])
-
+            adds+=2
         missing_edges = set(graph.edges()).difference(solution) #edges we must be adjacent to
         for edge in list(missing_edges):
             if edge[0] in captured_nodes or edge[1] in captured_nodes: #check for adjacency
@@ -35,7 +36,7 @@ def greedy(graph):
 
     for edge in solution:#just for graphic purposes
         graph.edges[edge]['color']="red"
-    return graph,solution,seen,seen+len(states)
+    return graph,solution,seen,adds
 
 def exhaustive(graph):
     seen = 0
@@ -51,7 +52,7 @@ def exhaustive(graph):
             for edge in item:
                 captured_nodes.add(edge[0])
                 captured_nodes.add(edge[1])
-                adds+=1
+                adds+=2
                 total_weight+=graph.edges[edge]['weight']
             
             if total_weight<best_cost:#is it actually worth checking whether this is a valid solution?
@@ -95,7 +96,9 @@ if __name__ =="__main__":
         timedelta = time.time()
         graph,solution,seen,adds = exhaustive(graph)
         timedelta = time.time() - timedelta
-    print(seen,adds,timedelta)
+
+    solcost = sum(graph.edges[x]['weight'] for x in solution)
+    print(f"{seen},{adds},{solcost},{timedelta}")
     if args.graph:
         generateDrawings(graph)
     

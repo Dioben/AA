@@ -89,13 +89,13 @@ if __name__ =="__main__":
     graph = nx.readwrite.node_link_graph(graphmap)
 
     if args.strat:
-        timedelta = time.time()
+        timedelta = time.perf_counter()
         graph,solution,seen,adds = greedy(graph)
-        timedelta = time.time() - timedelta
+        timedelta = time.perf_counter() - timedelta
     else:
-        timedelta = time.time()
+        timedelta = time.perf_counter()
         graph,solution,seen,adds = exhaustive(graph)
-        timedelta = time.time() - timedelta
+        timedelta = time.perf_counter() - timedelta
 
     solcost = sum(graph.edges[x]['weight'] for x in solution)
     print(f"{seen},{adds},{solcost},{timedelta}")

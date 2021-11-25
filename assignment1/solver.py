@@ -11,18 +11,18 @@ def greedy(graph):
     adds=0
     sortededges = sorted(graph.edges(),key=lambda x:graph.edges[x]['weight'])
     sortededges_as_tuples = [(x,) for x in sortededges]
+    edgeAsSet= set(graph.edges())
     states = sortededges_as_tuples[:]
     done = False
     while True: #will always choose shortest length solution, could also choose best one if I used bisection.insort
         solution = states.pop(0)
-        most_costly_edge = solution[-1]
         seen+=1
         captured_nodes = set()
         for edge in solution:#compute nodes we have attached to
             captured_nodes.add(edge[0])
             captured_nodes.add(edge[1])
             adds+=2
-        missing_edges = set(graph.edges()).difference(solution) #edges we must be adjacent to
+        missing_edges = edgeAsSet.difference(solution) #edges we must be adjacent to
         for edge in list(missing_edges):
             if edge[0] in captured_nodes or edge[1] in captured_nodes: #check for adjacency
                 missing_edges.remove(edge)
@@ -32,6 +32,7 @@ def greedy(graph):
             break
         #there is no point adding cheaper edges as that state has already been added
         #there is no point adding edges that do not contribute new nodes
+        most_costly_edge = solution[-1]
         states+=[solution + x for x in sortededges_as_tuples[sortededges.index(most_costly_edge)+1:] if x[0][0] not in captured_nodes or x[0][1] not in captured_nodes]
 
     for edge in solution:#just for graphic purposes
@@ -43,6 +44,7 @@ def exhaustive(graph):
     adds = 0
     best_cost = math.inf
     best_solution = None
+    edgeAsSet= set(graph.edges())
     for x in range(1,len(graph.edges())+1):#all length possibilities
         for item in  itertools.combinations(graph.edges(),x):#all possible arrangements
             seen+=1
@@ -56,7 +58,7 @@ def exhaustive(graph):
                 total_weight+=graph.edges[edge]['weight']
             
             if total_weight<best_cost:#is it actually worth checking whether this is a valid solution?
-                missing_edges = set(graph.edges()).difference(item)
+                missing_edges = edgeAsSet.difference(item)
                 for edge in list(missing_edges):
                     if edge[0] in captured_nodes or edge[1] in captured_nodes:
                         missing_edges.remove(edge)

@@ -43,8 +43,12 @@ def generateGraph(vertices=5,edgelimit=15,seed=93391):
         components.append(chosen1+chosen2)
         edge1 = random.choice(chosen1)
         edge2 = random.choice(chosen2)
-        graph.add_edge(edge1,edge2)
-        edges[(edge1,edge2)] = {"weight":eucdist(assignments[edge1]['pos'],assignments[edge2]['pos']),"color":"black"}
+        if edge1<edge2:
+            graph.add_edge(edge1,edge2)
+            edges[(edge1,edge2)] = {"weight":eucdist(assignments[edge1]['pos'],assignments[edge2]['pos']),"color":"black"}
+        else:
+            graph.add_edge(edge2,edge1)
+            edges[(edge2,edge1)] = {"weight":eucdist(assignments[edge1]['pos'],assignments[edge2]['pos']),"color":"black"}
     
     
     #complement if necessary

@@ -7,7 +7,7 @@ minnodes=$((nodes-1))
 maxnodes=$((nodes*(nodes-1)/2))
 for edges in $(seq $minnodes $maxnodes)
 do
-if [ $edges -le 20 ] 
+if [ $edges -le 20 ] #before this rule was added the runtime escalated exponentially for exhaustive search and got way too long
 then
 python3 graph.py --nodes $nodes --edges $edges --seed 93391
 echo "${nodes},${edges},exhaustive,$(python3 solver.py --exhaustive --no-graph)" >>results.csv

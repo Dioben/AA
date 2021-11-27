@@ -13,7 +13,6 @@ def greedy(graph):
     sortededges_as_tuples = [(x,) for x in sortededges]
     edgeAsSet= set(graph.edges())
     states = sortededges_as_tuples[:]
-    done = False
     while True: #will always choose shortest length solution, could also choose best one if I used bisection.insort
         solution = states.pop(0)
         seen+=1
@@ -22,13 +21,16 @@ def greedy(graph):
             captured_nodes.add(edge[0])
             captured_nodes.add(edge[1])
             adds+=2
+        
         missing_edges = edgeAsSet.difference(solution) #edges we must be adjacent to
-        for edge in list(missing_edges):
-            if edge[0] in captured_nodes or edge[1] in captured_nodes: #check for adjacency
-                missing_edges.remove(edge)
-            if not missing_edges:
-                done = True
-        if done:
+        missing_edges_left = len(missing_edges) #supposedly faster than set remove function
+
+        for edge in missing_edges:
+            if edge[0] not in captured_nodes and edge[1] not in captured_nodes: #check for non-adjacency
+                break
+            missing_edges_left-=1
+
+        if not missing_edges_left: #valid solution when missing_edges_left is 0
             break
         #there is no point adding cheaper edges as that state has already been added
         #there is no point adding edges that do not contribute new nodes
@@ -59,11 +61,14 @@ def exhaustive(graph):
             
             if total_weight<best_cost:#is it actually worth checking whether this is a valid solution?
                 missing_edges = edgeAsSet.difference(item)
-                for edge in list(missing_edges):
-                    if edge[0] in captured_nodes or edge[1] in captured_nodes:
-                        missing_edges.remove(edge)
+                missing_edges_left = len(missing_edges)
 
-                if not missing_edges:
+                for edge in missing_edges:
+                    if edge[0] not in captured_nodes and edge[1] not in captured_nodes:
+                        break
+                    missing_edges_left-=1
+
+                if not missing_edges_left:
                     best_cost = total_weight
                     best_solution = item
 

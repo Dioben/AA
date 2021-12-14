@@ -24,12 +24,21 @@ def staticProbabilityCounter(text,prob):
 def dynamicProbabilityCounter(text,probf,memorized = []):
     results = {}
     for char in text:
-        roll = random.random()
-        if roll<=prob:
-            if char not in results:
-                results[char]=1
-            else:
-                results[char]+=1
+        if char not in results:
+            value = 0
+        else:
+            value = results[char]
+            roll = random.random()
+        try:
+            limit = memorized[value]
+            if roll<=limit:
+                results[char] = value+1
+        except:
+            #we have gone past the memorized maximum
+            memorized+= [probf(x) for x in range(101)] #calculate the next 100 entries
+            limit = memorized[value]
+            if roll<=limit:
+                results[char] = value+1
     return results
 
 
@@ -38,7 +47,7 @@ def invSqrtFunc(value):
 
 if __name__ == "__main__":
     filepaths = ["english.txt","french.txt","german.txt"]
-    table = [invSqrtFunc(x) for x in range(0,20001)] #pre calculate character 
+    table = [invSqrtFunc(x) for x in range(101)] #pre calculate character 
     for filepath in filepaths:
         f = open(filepath,"r")
         text = f.read()

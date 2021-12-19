@@ -100,7 +100,9 @@ def inverseDynamicMod(value):
     #meaning 2**(k/2)-1 events until expected value is k
     #from slides: k = log2( n/2 + 1 ) = floor(log2(n/2))+1 = floor(log2(n)-1+1) = floor(log(2))
     # k = floor(log2(n)) -> 2**k = n ?
-    return 2 ** value  #TODO: ASK TEACHER ABOUT THIS
+
+    #this is terrible, will try something else instead
+    return 2 ** (value/2) -1  #TODO: ASK TEACHER ABOUT THIS
 
 if __name__ == "__main__":
     parser= argparse.ArgumentParser()

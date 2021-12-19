@@ -117,7 +117,7 @@ def drawLineGraphs(results):
         fig = px.scatter(staticAbsDF,x="sample size",y="value", color="metric")
         fig.update_layout(title_text=f"{lang} - Static", title_x=0.5)
 
-        fig.show()
+        #fig.show()
 
         fig = px.scatter(dynamicAbsDF,x="sample size",y="value", color="metric")
         fig.update_layout(title_text=f"{lang} - Dynamic", title_x=0.5)
@@ -145,15 +145,29 @@ def drawLineGraphs(results):
         fig.update_layout(title_text=f"{lang} - Swaps %", title_x=0.5)
         
         #fig.show()
-    #print(df)
 
 
     
 
-def drawBarGraphs(info):
+def drawBarGraphs(data):
     #TODO: overlap bar graph of letter appearances per lang using ['real'] and padding with 0s
-    pass
-
+    data = {x:y['real'] for x,y in data.items()}
+    #pad 0s
+    for name,info in data.items():
+        others = set(data.keys())
+        others.remove(name)
+        for other in others:
+            info.update({x:0 for x in data[other].keys() if x not in info})
+    
+    #convert into a better format for graphing        
+    merged = []
+    for name,info in data.items():
+        for letter,value in info.items():
+            merged.append({"text":name,"letter":letter,"value":value})
+    df = pd.DataFrame(merged)
+    fig= px.bar(df, x="letter", color="text",y="value", barmode="overlay") 
+    fig.show()
+    
 def inverseDynamicMod(value):
     #my factor is 1/(sqrt(2)**k)
     #equivalent to 1/(2 **1/2 **k) = 1/(2 **k/2)
@@ -175,7 +189,6 @@ if __name__ == "__main__":
     for name,info in data.items():
         info = upscaleValues(info,16,inverseDynamicMod,[inverseDynamicMod(x) for x in range(101)])
         results[name] = getStats(info)
-    
         
 drawLineGraphs(results)
 drawBarGraphs(data)

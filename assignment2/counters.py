@@ -48,7 +48,7 @@ def dynamicProbabilityCounter(text,probf,memorized = []):
 
 
 def invSqrtFunc(value):
-    return 1/(sqrt(2)**value)
+    return 2**(-1/2*value)
 
 if __name__ == "__main__":
     parser= argparse.ArgumentParser()
@@ -59,6 +59,7 @@ if __name__ == "__main__":
     filepaths = args.files.split(",")
     table = [invSqrtFunc(x) for x in range(101)] #pre calculate character
 
+    print(table)
     results = {}
     for filepath in filepaths:
         f = open(filepath,"r")

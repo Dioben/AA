@@ -1,6 +1,8 @@
 import argparse
 import json
 from math import inf
+import plotly.express as px
+import pandas as pd
 
 def upscaleValues(data,fixedMult,dynamicMod,memorized = []):
     for idx in range(len(data['static'])):
@@ -19,7 +21,7 @@ def upscaleValues(data,fixedMult,dynamicMod,memorized = []):
 
 
 def getStats(data):
-    results = {}
+    results = []
     sizes = [1,10,25,50,100,175,250,375,500,750,1000]
     real = data['real']
     for size in sizes:
@@ -31,6 +33,10 @@ def getStats(data):
         avgStatic = {x:sum([item.get(x,0) for item in staticList])/size for x in real.keys()}
         avgDynamic = {x:sum([item.get(x,0) for item in dynamicList])/size for x in real.keys()}
         
+        print(avgStatic)
+        print(avgDynamic)
+        print(real)
+        print("linebreak")
         avgErrorStatic = sum( [abs(y-avgStatic[x]) for x,y in real.items()] ) /len(real.keys()) 
         avgErrorDynamic = sum( [abs(y-avgDynamic[x]) for x,y in real.items()] ) /len(real.keys())
 
@@ -41,10 +47,8 @@ def getStats(data):
         staticSwaps = countSwaps(realSorted,staticSorted)
         dynamicSwaps = countSwaps(realSorted,dynamicSorted)
         
-        results[size] = {
-                        "static":{"max":max,"min":min, "avg":avgErrorStatic,"swaps":staticSwaps},
-                        "dynamic":{"max":dyn_max,"min":dyn_min, "avg":avgErrorDynamic,"swaps":dynamicSwaps}
-                         }
+        results.append({"size":size, "label":"static","max":max,"min":min, "avg":avgErrorStatic,"swaps":staticSwaps})
+        results.append({"size":size,"label":"dynamic","max":dyn_max,"min":dyn_min, "avg":avgErrorDynamic,"swaps":dynamicSwaps})
     return results
 
 
@@ -78,6 +82,17 @@ def countSwaps(realSorted,otherSorted):
 
 
 
+def drawLineGraphs(results):
+    #TODO: plot max, min,avg diff based on size
+    #TODO plot necessary swaps based on size
+    for lang,data in results.items():
+        df = pd.DataFrame(data)
+    print(df)
+    pass 
+
+def drawBarGraphs(info):
+    #TODO: overlap bar graph of letter appearances per lang using ['real'] and padding with 0s
+    pass
 
 def inverseDynamicMod(value):
     #my factor is 1/(sqrt(2)**k)
@@ -99,7 +114,6 @@ if __name__ == "__main__":
         info = upscaleValues(info,16,inverseDynamicMod,[inverseDynamicMod(x) for x in range(101)])
         results[name] = getStats(info)
     
-    for x,y in results.items():
-        print(x)
-        print(y)
         
+drawLineGraphs(results)
+drawBarGraphs(data)

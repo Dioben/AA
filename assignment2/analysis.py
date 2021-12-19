@@ -19,7 +19,7 @@ def upscaleValues(data,fixedMult,dynamicMod,memorized = []):
 
 
 def getStats(data):
-    results = {"static":{},"dynamic":{}}
+    results = {}
     sizes = [1,10,25,50,100,175,250,375,500,750,1000]
     real = data['real']
     for size in sizes:
@@ -41,8 +41,10 @@ def getStats(data):
         staticSwaps = countSwaps(realSorted,staticSorted)
         dynamicSwaps = countSwaps(realSorted,dynamicSorted)
         
-        results[size] = {"max":max,"min":min,"dyn_max":dyn_max,"dyn_min":dyn_min,
-                        "avgdiff":avgErrorStatic,"dyn_avgdiff":avgErrorDynamic,"swaps":staticSwaps,"dyn_swaps":dynamicSwaps}
+        results[size] = {
+                        "static":{"max":max,"min":min, "avg":avgErrorStatic,"swaps":staticSwaps},
+                        "dynamic":{"max":dyn_max,"min":dyn_min, "avg":avgErrorDynamic,"swaps":dynamicSwaps}
+                         }
     return results
 
 

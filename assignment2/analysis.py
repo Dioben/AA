@@ -27,18 +27,17 @@ def getStats(data):
     for size in sizes:
         staticList = data['static'][:size]
         dynamicList = data['dynamic'][:size]
-        max,min = getDiffs(real,staticList)
-        dyn_max,dyn_min = getDiffs(real,dynamicList)
+        max,min,percent_max,percent_min = getDiffs(real,staticList)
+        dyn_max,dyn_min,dyn_percent_max,dyn_percent_min = getDiffs(real,dynamicList)
 
         avgStatic = {x:sum([item.get(x,0) for item in staticList])/size for x in real.keys()}
         avgDynamic = {x:sum([item.get(x,0) for item in dynamicList])/size for x in real.keys()}
         
-        print(avgStatic)
-        print(avgDynamic)
-        print(real)
-        print("linebreak")
         avgErrorStatic = sum( [abs(y-avgStatic[x]) for x,y in real.items()] ) /len(real.keys()) 
         avgErrorDynamic = sum( [abs(y-avgDynamic[x]) for x,y in real.items()] ) /len(real.keys())
+
+        avgDevStatic = sum( [abs(y-avgStatic[x])/y*100 for x,y in real.items()] ) /len(real.keys()) 
+        avgDevDynamic = sum( [abs(y-avgDynamic[x])/y*100 for x,y in real.items()] ) /len(real.keys())
 
         realSorted = sorted(real.keys(),key=lambda x:real[x])
         staticSorted = sorted(avgStatic.keys(),key=lambda x:avgStatic[x])
@@ -47,23 +46,45 @@ def getStats(data):
         staticSwaps = countSwaps(realSorted,staticSorted)
         dynamicSwaps = countSwaps(realSorted,dynamicSorted)
         
-        results.append({"size":size, "label":"static","max":max,"min":min, "avg":avgErrorStatic,"swaps":staticSwaps})
-        results.append({"size":size,"label":"dynamic","max":dyn_max,"min":dyn_min, "avg":avgErrorDynamic,"swaps":dynamicSwaps})
+        #static
+        results.append({"sample size":size, "label":"static","metric":"max","value":max})
+        results.append({"sample size":size, "label":"static","metric":"min","value":min})
+        results.append({"sample size":size, "label":"static","metric":"average", "value":avgErrorStatic})
+        results.append({"sample size":size, "label":"static","metric":"swaps", "value":staticSwaps})
+        results.append({"sample size":size, "label":"static","metric":"relative swaps", "value":staticSwaps/len(realSorted) *100})
+        results.append({"sample size":size, "label":"static","metric":"deviation max","value":percent_max})
+        results.append({"sample size":size, "label":"static","metric":"deviation min","value":percent_min})
+        results.append({"sample size":size, "label":"static","metric":"deviation average","value":avgDevStatic})
+        #dynamic
+        results.append({"sample size":size, "label":"dynamic","metric":"max","value":dyn_max})
+        results.append({"sample size":size, "label":"dynamic","metric":"min","value":dyn_min})
+        results.append({"sample size":size, "label":"dynamic","metric":"average", "value":avgErrorDynamic})
+        results.append({"sample size":size, "label":"dynamic","metric":"swaps", "value":dynamicSwaps})
+        results.append({"sample size":size, "label":"dynamic","metric":"relative swaps", "value":dynamicSwaps/len(realSorted) *100})
+        results.append({"sample size":size, "label":"dynamic","metric":"deviation max","value":dyn_percent_max})
+        results.append({"sample size":size, "label":"dynamic","metric":"deviation min","value":dyn_percent_min})
+        results.append({"sample size":size, "label":"dynamic","metric":"deviation average","value":avgDevDynamic})
+               
     return results
 
 
 def getDiffs(real,list):
-    max= 0
-    min = inf
+    max = percent_max= 0
+    min= percent_min = inf
     for letter,value in real.items():
         for datapoint in list:
             value2 = datapoint.get(letter,0)
             delta = abs(value-value2)
+            percent_delta = delta/value*100
             if max<delta:
                 max = delta
             if min>delta:
                 min = delta
-    return max,min
+            if percent_max<percent_delta:
+                percent_max = percent_delta
+            if percent_min>percent_delta:
+                percent_min = percent_delta
+    return max,min,percent_max,percent_min
 
 def countSwaps(realSorted,otherSorted):
     swaps = 0
@@ -83,12 +104,51 @@ def countSwaps(realSorted,otherSorted):
 
 
 def drawLineGraphs(results):
-    #TODO: plot max, min,avg diff based on size
-    #TODO plot necessary swaps based on size
     for lang,data in results.items():
         df = pd.DataFrame(data)
-    print(df)
-    pass 
+        staticAbsDF = df.loc[df["label"]=="static"].loc[df['metric'].isin(["max","min","average"])]
+        staticRelDF = df.loc[df["label"]=="static"].loc[df['metric'].isin(["deviation max","deviaton min","deviation average"])]
+        dynamicAbsDF = df.loc[df["label"]=="dynamic"].loc[df['metric'].isin(["max","min","average"])]
+        dynamicRelDF = df.loc[df["label"]=="dynamic"].loc[df['metric'].isin(["deviation max","deviaton min","deviation average"])]
+        
+        absSwaps = df.loc[df['metric']=="swaps"]
+        relSwaps = df.loc[df['metric']=="relative swaps"]
+
+        fig = px.scatter(staticAbsDF,x="sample size",y="value", color="metric")
+        fig.update_layout(title_text=f"{lang} - Static", title_x=0.5)
+
+        fig.show()
+
+        fig = px.scatter(dynamicAbsDF,x="sample size",y="value", color="metric")
+        fig.update_layout(title_text=f"{lang} - Dynamic", title_x=0.5)
+        
+        #fig.show()
+
+        fig = px.scatter(absSwaps,x="sample size",y="value",color="label")
+        fig.update_layout(title_text=f"{lang} - Swaps", title_x=0.5)
+        
+        #fig.show()
+
+        # now do it again in relative terms
+
+        fig = px.scatter(staticRelDF,x="sample size",y="value", color="metric")
+        fig.update_layout(title_text=f"{lang} - Percent Deviation Static", title_x=0.5)
+
+        #fig.show()
+
+        fig = px.scatter(dynamicRelDF,x="sample size",y="value", color="metric")
+        fig.update_layout(title_text=f"{lang} - Percent Deviation Dynamic", title_x=0.5)
+        
+        #fig.show()
+
+        fig = px.scatter(relSwaps,x="sample size",y="value",color="label")
+        fig.update_layout(title_text=f"{lang} - Swaps %", title_x=0.5)
+        
+        #fig.show()
+    #print(df)
+
+
+    
 
 def drawBarGraphs(info):
     #TODO: overlap bar graph of letter appearances per lang using ['real'] and padding with 0s

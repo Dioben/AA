@@ -3,6 +3,7 @@ import json
 from math import inf
 import plotly.express as px
 import pandas as pd
+import os
 
 def upscaleValues(data,fixedMult,dynamicMod,memorized = []):
     for idx in range(len(data['static'])):
@@ -103,7 +104,7 @@ def countSwaps(realSorted,otherSorted):
 
 
 
-def drawLineGraphs(results):
+def drawLineGraphs(results,interactive):
     for lang,data in results.items():
         df = pd.DataFrame(data)
         lang = lang.removesuffix(".txt") #requires python 3.9
@@ -118,46 +119,56 @@ def drawLineGraphs(results):
         fig = px.scatter(staticAbsDF,x="sample size",y="value", color="metric")
         fig.update_layout(title_text=f"{lang} - Static", title_x=0.5)
 
-        #either show or dump figure
-        #fig.show()
-        fig.write_image(f"{lang}StaticAbs.png")
+        if interactive:
+            fig.show()
+        else:
+            fig.write_image(f"graphs/{lang}StaticAbs.png")
 
         fig = px.scatter(dynamicAbsDF,x="sample size",y="value", color="metric")
         fig.update_layout(title_text=f"{lang} - Dynamic", title_x=0.5)
         
-        #fig.show()
-        fig.write_image(f"{lang}Abs")
-        fig.write_image(f"{lang}dynamicAbs.png")
+        if interactive:
+            fig.show()
+        else:
+            fig.write_image(f"graphs/{lang}DynamicAbs.png")
 
         fig = px.scatter(absSwaps,x="sample size",y="value",color="label")
         fig.update_layout(title_text=f"{lang} - Swaps", title_x=0.5)
         
-        #fig.show()
-        fig.write_image(f"{lang}SwapsAbs.png")
+        if interactive:
+            fig.show()
+        else:
+            fig.write_image(f"graphs/{lang}SwapsAbs.png")
 
         # now do it again in relative terms
 
         fig = px.scatter(staticRelDF,x="sample size",y="value", color="metric")
         fig.update_layout(title_text=f"{lang} - Percent Deviation Static", title_x=0.5)
 
-        #fig.show()
-        fig.write_image(f"{lang}StaticRel.png")
+        if interactive:
+            fig.show()
+        else:
+            fig.write_image(f"graphs/{lang}StaticRel.png")
 
         fig = px.scatter(dynamicRelDF,x="sample size",y="value", color="metric")
         fig.update_layout(title_text=f"{lang} - Percent Deviation Dynamic", title_x=0.5)
         
-        #fig.show()
-        fig.write_image(f"{lang}dynamicRel.png")
+        if interactive:
+            fig.show()
+        else:
+            fig.write_image(f"graphs/{lang}DynamicRel.png")
 
         fig = px.scatter(relSwaps,x="sample size",y="value",color="label")
         fig.update_layout(title_text=f"{lang} - Swaps %", title_x=0.5)
         
-        #fig.show()
-        fig.write_image(f"{lang}SwapsRel.png")
+        if interactive:
+            fig.show()
+        else:
+            fig.write_image(f"graphs/{lang}SwapsRel.png")
 
     
 
-def drawBarGraphs(data):
+def drawBarGraphs(data,interactive):
     data = {x:y['real'] for x,y in data.items()}
     #pad 0s
     for name,info in data.items():
@@ -173,7 +184,10 @@ def drawBarGraphs(data):
             merged.append({"text":name,"letter":letter,"value":value})
     df = pd.DataFrame(merged)
     fig= px.bar(df, x="letter", color="text",y="value", barmode="overlay") 
-    fig.show()
+    if interactive:
+        fig.show()
+    else:
+        fig.write_image("graphs/hist.png")
     
 def inverseDynamicMod(value):
     return 2 ** (value/2) -1  #TODO: ASK TEACHER ABOUT THIS
@@ -181,6 +195,8 @@ def inverseDynamicMod(value):
 if __name__ == "__main__":
     parser= argparse.ArgumentParser()
     parser.add_argument("--source",help="input data json file", default="results.json")
+    parser.add_argument('--interactive', dest='interact', action='store_true')
+    parser.set_defaults(interact=True)
     args = parser.parse_args()
     f = open(args.source,"r")
     data = json.load(f)
@@ -189,6 +205,8 @@ if __name__ == "__main__":
     for name,info in data.items():
         info = upscaleValues(info,16,inverseDynamicMod,[inverseDynamicMod(x) for x in range(101)])
         results[name] = getStats(info)
-        
-drawLineGraphs(results)
-drawBarGraphs(data)
+    if not args.interactive:
+        if not os.path.exists("graphs"):
+            os.mkdir("graphs")    
+    drawLineGraphs(results,args.interactive)
+    drawBarGraphs(data,args.interactive)

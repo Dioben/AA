@@ -106,6 +106,7 @@ def countSwaps(realSorted,otherSorted):
 def drawLineGraphs(results):
     for lang,data in results.items():
         df = pd.DataFrame(data)
+        lang = lang.removesuffix(".txt") #requires python 3.9
         staticAbsDF = df.loc[df["label"]=="static"].loc[df['metric'].isin(["max","min","average"])]
         staticRelDF = df.loc[df["label"]=="static"].loc[df['metric'].isin(["deviation max","deviaton min","deviation average"])]
         dynamicAbsDF = df.loc[df["label"]=="dynamic"].loc[df['metric'].isin(["max","min","average"])]
@@ -117,17 +118,22 @@ def drawLineGraphs(results):
         fig = px.scatter(staticAbsDF,x="sample size",y="value", color="metric")
         fig.update_layout(title_text=f"{lang} - Static", title_x=0.5)
 
+        #either show or dump figure
         #fig.show()
+        fig.write_image(f"{lang}StaticAbs.png")
 
         fig = px.scatter(dynamicAbsDF,x="sample size",y="value", color="metric")
         fig.update_layout(title_text=f"{lang} - Dynamic", title_x=0.5)
         
         #fig.show()
+        fig.write_image(f"{lang}Abs")
+        fig.write_image(f"{lang}dynamicAbs.png")
 
         fig = px.scatter(absSwaps,x="sample size",y="value",color="label")
         fig.update_layout(title_text=f"{lang} - Swaps", title_x=0.5)
         
         #fig.show()
+        fig.write_image(f"{lang}SwapsAbs.png")
 
         # now do it again in relative terms
 
@@ -135,22 +141,23 @@ def drawLineGraphs(results):
         fig.update_layout(title_text=f"{lang} - Percent Deviation Static", title_x=0.5)
 
         #fig.show()
+        fig.write_image(f"{lang}StaticRel.png")
 
         fig = px.scatter(dynamicRelDF,x="sample size",y="value", color="metric")
         fig.update_layout(title_text=f"{lang} - Percent Deviation Dynamic", title_x=0.5)
         
         #fig.show()
+        fig.write_image(f"{lang}dynamicRel.png")
 
         fig = px.scatter(relSwaps,x="sample size",y="value",color="label")
         fig.update_layout(title_text=f"{lang} - Swaps %", title_x=0.5)
         
         #fig.show()
-
+        fig.write_image(f"{lang}SwapsRel.png")
 
     
 
 def drawBarGraphs(data):
-    #TODO: overlap bar graph of letter appearances per lang using ['real'] and padding with 0s
     data = {x:y['real'] for x,y in data.items()}
     #pad 0s
     for name,info in data.items():
@@ -169,13 +176,6 @@ def drawBarGraphs(data):
     fig.show()
     
 def inverseDynamicMod(value):
-    #my factor is 1/(sqrt(2)**k)
-    #equivalent to 1/(2 **1/2 **k) = 1/(2 **k/2)
-    #meaning 2**(k/2)-1 events until expected value is k
-    #from slides: k = log2( n/2 + 1 ) = floor(log2(n/2))+1 = floor(log2(n)-1+1) = floor(log(2))
-    # k = floor(log2(n)) -> 2**k = n ?
-
-    #this is terrible, will try something else instead
     return 2 ** (value/2) -1  #TODO: ASK TEACHER ABOUT THIS
 
 if __name__ == "__main__":

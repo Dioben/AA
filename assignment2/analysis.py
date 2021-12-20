@@ -183,7 +183,7 @@ def drawBarGraphs(data,interactive):
         for letter,value in info.items():
             merged.append({"text":name.removesuffix(".txt").capitalize(),"letter":letter,"value":value})
     df = pd.DataFrame(merged)
-    fig= px.bar(df, x="letter", color="text",y="value", barmode="overlay")
+    fig= px.bar(df, x="letter", color="text",y="value", barmode="group")
     fig.update_layout(title_text="Letter Frequency Distribution", title_x=0.5)
     if interactive:
         fig.show()

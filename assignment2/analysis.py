@@ -107,7 +107,7 @@ def countSwaps(realSorted,otherSorted):
 def drawLineGraphs(results,interactive):
     for lang,data in results.items():
         df = pd.DataFrame(data)
-        lang = lang.removesuffix(".txt") #requires python 3.9
+        lang = lang.removesuffix(".txt").capitalize() #requires python 3.9
         staticAbsDF = df.loc[df["label"]=="static"].loc[df['metric'].isin(["max","min","average"])]
         staticRelDF = df.loc[df["label"]=="static"].loc[df['metric'].isin(["deviation max","deviaton min","deviation average"])]
         dynamicAbsDF = df.loc[df["label"]=="dynamic"].loc[df['metric'].isin(["max","min","average"])]
@@ -181,9 +181,10 @@ def drawBarGraphs(data,interactive):
     merged = []
     for name,info in data.items():
         for letter,value in info.items():
-            merged.append({"text":name,"letter":letter,"value":value})
+            merged.append({"text":name.removesuffix(".txt").capitalize(),"letter":letter,"value":value})
     df = pd.DataFrame(merged)
-    fig= px.bar(df, x="letter", color="text",y="value", barmode="overlay") 
+    fig= px.bar(df, x="letter", color="text",y="value", barmode="overlay")
+    fig.update_layout(title_text="Letter Frequency Distribution", title_x=0.5)
     if interactive:
         fig.show()
     else:
@@ -196,7 +197,7 @@ if __name__ == "__main__":
     parser= argparse.ArgumentParser()
     parser.add_argument("--source",help="input data json file", default="results.json")
     parser.add_argument('--interactive', dest='interact', action='store_true')
-    parser.set_defaults(interact=True)
+    parser.set_defaults(interact=False)
     args = parser.parse_args()
     f = open(args.source,"r")
     data = json.load(f)

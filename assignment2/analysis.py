@@ -205,7 +205,7 @@ if __name__ == "__main__":
     for name,info in data.items():
         info = upscaleValues(info,16,inverseDynamicMod,[inverseDynamicMod(x) for x in range(101)])
         results[name] = getStats(info)
-    if not args.interactive:
+    if not args.interact:
         if not os.path.exists("graphs"):
             os.mkdir("graphs")    
     drawLineGraphs(results,args.interact)

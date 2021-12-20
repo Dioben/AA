@@ -109,9 +109,9 @@ def drawLineGraphs(results,interactive):
         df = pd.DataFrame(data)
         lang = lang.removesuffix(".txt").capitalize() #requires python 3.9
         staticAbsDF = df.loc[df["label"]=="static"].loc[df['metric'].isin(["max","min","average"])]
-        staticRelDF = df.loc[df["label"]=="static"].loc[df['metric'].isin(["deviation max","deviaton min","deviation average"])]
+        staticRelDF = df.loc[df["label"]=="static"].loc[df['metric'].isin(["deviation max","deviation min","deviation average"])]
         dynamicAbsDF = df.loc[df["label"]=="dynamic"].loc[df['metric'].isin(["max","min","average"])]
-        dynamicRelDF = df.loc[df["label"]=="dynamic"].loc[df['metric'].isin(["deviation max","deviaton min","deviation average"])]
+        dynamicRelDF = df.loc[df["label"]=="dynamic"].loc[df['metric'].isin(["deviation max","deviation min","deviation average"])]
         
         absSwaps = df.loc[df['metric']=="swaps"]
         relSwaps = df.loc[df['metric']=="relative swaps"]

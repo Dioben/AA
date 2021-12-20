@@ -208,5 +208,5 @@ if __name__ == "__main__":
     if not args.interactive:
         if not os.path.exists("graphs"):
             os.mkdir("graphs")    
-    drawLineGraphs(results,args.interactive)
-    drawBarGraphs(data,args.interactive)
+    drawLineGraphs(results,args.interact)
+    drawBarGraphs(data,args.interact)

@@ -1,6 +1,6 @@
 import argparse
 import json
-from math import inf
+from math import inf,sqrt
 import plotly.express as px
 import pandas as pd
 import os
@@ -191,8 +191,7 @@ def drawBarGraphs(data,interactive):
         fig.write_image("graphs/hist.png")
     
 def inverseDynamicMod(value):
-    return 2 ** (value/2) -1  #TODO: ASK TEACHER ABOUT THIS
-
+    return (2 **(value/2) - sqrt(2) +1)/(sqrt(2)-1) ##  2** value/2 is more accurate than using sqrt(2)**value
 if __name__ == "__main__":
     parser= argparse.ArgumentParser()
     parser.add_argument("--source",help="input data json file", default="results.json")

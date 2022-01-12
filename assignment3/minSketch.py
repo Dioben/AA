@@ -58,7 +58,7 @@ class CountMinSketch(object):
 
         self.n = 0
 
-        self.tables = np.zeros((d,m),dtype=np.uint64)
+        self.table = np.zeros((d,m),dtype=np.uint64)
 
     def _hash(self,x):
         #CHANGELOG: Entirely redone for better readability
@@ -99,7 +99,7 @@ class CountMinSketch(object):
         The returned value always overestimates the real value.
         """
         #CHANGELOG: Changed indexing a bit
-        return np.min(self.table[index] for index in zip(range(self.d), self._hash(x)))
+        return min(self.table[index] for index in zip(range(self.d), self._hash(x)))
 
     def __getitem__(self, x):
         """

@@ -1,3 +1,4 @@
+
 # Rafael Carrascosa's Count-Min Sketch pure python implementation
 #
 # Adapted from https://github.com/rafacarrascosa/countminsketch
@@ -5,12 +6,14 @@
 # Using delta and epsilon as suggested in https://github.com/AWNystrom/CountMinSketch
 #
 # J. Madeira --- December 2018
-#
-# Further Adjustments by Diogo Bento --- January 2021
+
+
+import array
+
+import hashlib
 
 import math
 
-import numpy as np
 
 class CountMinSketch(object):
     """
@@ -35,16 +38,11 @@ class CountMinSketch(object):
         Parameters
         ----------
         m : the number of columns in the count matrix
-        d : the number of rows in the count matrix -> formal language has |rows| hash functions, even if it seems opposite of what's intuitive
+        d : the number of rows in the count matrix
         delta : (not applicable if m and d are supplied) the probability of query error
         epsilon : (not applicable if w and d are supplied) the query error factor
         """
-        
-        #CHANGELOG:
-        """
-        print statement has been moved to __str__
-        table is now numpy based
-        """
+
         if m is not None and d is not None:
             self.m = m
             self.d = d
@@ -54,28 +52,23 @@ class CountMinSketch(object):
             self.d = math.ceil(math.log(1.0 / delta))
         else:
             raise ValueError( "You must either supply both m and d or delta and epsilon.")
-        
+
+        print("CM Sketch with " + str(self.m) + " columns and " + str(self.d) + " rows")
 
         self.n = 0
 
-        self.tables = np.zeros((d,m),dtype=np.uint64)
+        self.tables = []
+        for _ in range(self.d):
+            table = array.array("l", (0 for _ in range(self.m)))   # signed long integers
+            self.tables.append(table)
 
-    def _hash(self,x):
-        #CHANGELOG: Entirely redone for better readability
-        values = []
-        for i in range(self.d):
-            item = (x,i)
-            values.append( abs(hash(item)) % self.m)
-        return values
-    '''
     def _hash(self, x):
         md5 = hashlib.md5(str(hash(x)).encode("utf-8"))     # handle bytes, not strings
         for i in range(self.d):
             md5.update(str(i).encode("utf-8"))              # concatenate
             yield int(md5.hexdigest(), 16) % self.m
-    '''
 
-    def update(self, x):
+    def update(self, x, value=1):
         """
         Count element `x` as if had appeared `value` times.
         By default `value=1` so:
@@ -84,22 +77,16 @@ class CountMinSketch(object):
 
         Effectively counts `x` as occurring once.
         """
-        #CHANGELOG:
-        '''
-        removed the value parameter
-        changed indexing a bit
-        '''
-        self.n += 1
-        for index in zip( range(self.d) , self._hash(x)):
-            self.table[index] += 1
+        self.n += value
+        for table, i in zip(self.tables, self._hash(x)):
+            table[i] += value
 
     def query(self, x):
         """
         Return an estimation of the amount of times `x` has ocurred.
         The returned value always overestimates the real value.
         """
-        #CHANGELOG: Changed indexing a bit
-        return np.min(self.table[index] for index in zip(range(self.d), self._hash(x)))
+        return min(table[i] for table, i in zip(self.tables, self._hash(x)))
 
     def __getitem__(self, x):
         """
@@ -113,6 +100,3 @@ class CountMinSketch(object):
         argument of `add` might be different from 1.
         """
         return self.n
-
-    def __str__(self):
-            return("CM Sketch with " + str(self.m) + " columns and " + str(self.d) + " rows")

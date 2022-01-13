@@ -67,13 +67,6 @@ class CountMinSketch(object):
             item = (x,i)
             values.append( abs(hash(item)) % self.m)
         return values
-    '''
-    def _hash(self, x):
-        md5 = hashlib.md5(str(hash(x)).encode("utf-8"))     # handle bytes, not strings
-        for i in range(self.d):
-            md5.update(str(i).encode("utf-8"))              # concatenate
-            yield int(md5.hexdigest(), 16) % self.m
-    '''
 
     def update(self, x):
         """

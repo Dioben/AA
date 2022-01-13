@@ -12,17 +12,20 @@ if __name__ == "__main__":
     args = parser.parse_args()
     filepaths = args.files.split(",")
    
-    results = {fp.removesuffix(".txt"):{} for fp in filepaths}
+    results = {fp.removesuffix(".txt"):{"sketch":[],"real":{}} for fp in filepaths}
     for filepath in filepaths:
         keyname = filepath.removesuffix(".txt")
         with  open(filepath,"r") as f:
             words = f.read().split(" ")
         real = Counter(words)
-        sketch = CountMinSketch(d=7, m=len(real.keys()) ) #7 functions, as many rows as there are words
-        for word in words:
-            sketch.update(word)
+        for hashes in range(3,11):
+            for hashsize in range (1,20):
+                sketch = CountMinSketch(d=hashes, m= int(len(real.keys()) *hashsize/10) )
+                for word in words:
+                    sketch.update(word)
+                results[keyname]['sketch'].append({"hashes":hashes,"size":hashsize/10,"values": {x:int(sketch.query(x)) for x in real.keys()} } ) #converting is necessary because of JSON 
         results[keyname]['real'] = real
-        results[keyname]['sketch'] = {x:int(sketch.query(x)) for x in real.keys()} #converting is necessary because of JSON
+        
     if args.output:
         f = open(args.output,"w")
         json.dump(results,f)

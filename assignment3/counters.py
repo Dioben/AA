@@ -19,7 +19,7 @@ if __name__ == "__main__":
             words = f.read().split(" ")
         real = Counter(words)
         for hashes in range(3,11):
-            for hashsize in range (1,20):
+            for hashsize in range (1,21):
                 sketch = CountMinSketch(d=hashes, m= int(len(real.keys()) *hashsize/10) )
                 for word in words:
                     sketch.update(word)

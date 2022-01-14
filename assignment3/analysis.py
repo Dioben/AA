@@ -14,10 +14,11 @@ def getErrorStats(real,other):
     N = len(other.keys())
     
     avg_err = sum([other[x] - real[x] for x in other.keys()]) / N
+    avg_rel_err = sum([ (other[x] - real[x])/real[x] for x in other.keys()]) / N
     squaresum =  sum([ (other[x] - real[x])**2 for x in other.keys()])
     deviation = sqrt( squaresum/ N )
 
-    return max_err_abs , max_err_rel, avg_err, deviation
+    return max_err_abs , max_err_rel, avg_err,avg_rel_err, deviation
 
 def getDiffs(real,list):
     max = percent_max= 0
@@ -34,27 +35,22 @@ def getDiffs(real,list):
 
     
 
-def drawBarGraphs(data,interactive):
-    data = {x:y['real'] for x,y in data.items()}
-    #pad 0s
-    for name,info in data.items():
-        others = set(data.keys())
-        others.remove(name)
-        for other in others:
-            info.update({x:0 for x in data[other].keys() if x not in info})
+def draw3DScatters(data,interactive):
+    df = pd.DataFrame(data)
+    for metric in ["Max Absolute Error","Max Relative Error","Average Absolute Error","Average Deviation","Average Relative Error"]:
+        fig = px.scatter_3d(df,color="Language",x="Hashes",y="Slot Ratio",z=metric)
+        fig.update_layout(title_text=metric, title_x=0.5)
+        if interactive:
+            fig.show()
+        else:
+            fig.write_image(f"graphs/{metric}.png")
+            for lang in df['Language'].unique():  #these are not necessary in interative view because interactive mode can be real time filtered
+                subdf = df.loc[df['Language']==lang]
+                fig = px.scatter_3d(subdf,x="Hashes",y="Slot Ratio",z=metric)
+                fig.update_layout(title_text=f"{lang} - {metric}", title_x=0.5)
+                fig.write_image(f"graphs/{lang}{metric}.png")
     
-    #convert into a better format for graphing        
-    merged = []
-    for name,info in data.items():
-        for letter,value in info.items():
-            merged.append({"text":name.removesuffix(".txt").capitalize(),"letter":letter,"value":value})
-    df = pd.DataFrame(merged)
-    fig= px.bar(df, x="letter", color="text",y="value", barmode="group")
-    fig.update_layout(title_text="Letter Frequency Distribution", title_x=0.5)
-    if interactive:
-        fig.show()
-    else:
-        fig.write_image("graphs/hist.png")
+
  
 if __name__ == "__main__":
     parser= argparse.ArgumentParser()
@@ -72,17 +68,12 @@ if __name__ == "__main__":
         for sketch in sketches:
             hashcount = sketch["hashes"]
             slots = sketch['size']
-            max_err_abs , max_err_rel, avg_err, deviation = getErrorStats(real,sketch['values'])
+            max_err_abs , max_err_rel, avg_err,avg_rel_err, deviation = getErrorStats(real,sketch['values'])
             results.append(
-                {"Language":lang,"Hashes":hashcount,"Slots":slots,"Max Absolute Error":max_err_abs,
-                "Max Relative Error":max_err_rel,"Average Absolute Error":avg_err,"Average Deviation":deviation}
+                {"Language":lang,"Hashes":hashcount,"Slot Ratio":slots,"Max Absolute Error":max_err_abs,
+                "Max Relative Error":max_err_rel,"Average Absolute Error":avg_err,"Average Relative Error":avg_rel_err,"Average Deviation":deviation}
                 )
     if not args.interact:
         if not os.path.exists("graphs"):
             os.mkdir("graphs")    
-    for x in results[:10]:
-        print(x)
-    print("...")
-    for x in results[-10:]:
-        print(x)
-    #draw3DScatters(results,args.interact)
+    draw3DScatters(results,args.interact)

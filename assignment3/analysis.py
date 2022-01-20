@@ -35,7 +35,7 @@ def getDiffs(real,list):
 
     
 
-def draw3DScatters(data,interactive):
+def drawPostScatters(data,interactive):
     df = pd.DataFrame(data)
     for metric in ["Max Absolute Error","Max Relative Error","Average Absolute Error","Average Deviation","Average Relative Error"]:
         fig = px.scatter_3d(df,color="Language",x="Hashes",y="Slot Ratio",z=metric)
@@ -51,6 +51,22 @@ def draw3DScatters(data,interactive):
                 fig.write_image(f"graphs/{lang}{metric}.png")
     
 
+def plotSnapshotGraphs(data,interactive):
+    df = pd.DataFrame(data)
+    for metric in ["Overlapping Words","Word Matches"]:
+        fig = px.scatter_3d(df,color="Language",x="Hashes",y="Slot Ratio",z=metric)
+        fig.update_layout(title_text=metric, title_x=0.5)
+        if interactive:
+            fig.show()
+        else:
+            fig.write_image(f"graphs/{metric}.png")
+            for lang in df['Language'].unique():  #these are not necessary in interative view because interactive mode can be real time filtered
+                subdf = df.loc[df['Language']==lang]
+                fig = px.scatter_3d(subdf,x="Hashes",y="Slot Ratio",z=metric)
+                fig.update_layout(title_text=f"{lang} - {metric}", title_x=0.5)
+                fig.write_image(f"graphs/{lang}{metric}.png")
+
+
  
 if __name__ == "__main__":
     parser= argparse.ArgumentParser()
@@ -62,6 +78,7 @@ if __name__ == "__main__":
         data = json.load(f)
 
     results = []
+    topX = []
     for lang, info in data.items():
         real = info["real"]
         sketches = info["sketch"]
@@ -73,7 +90,19 @@ if __name__ == "__main__":
                 {"Language":lang,"Hashes":hashcount,"Slot Ratio":slots,"Max Absolute Error":max_err_abs,
                 "Max Relative Error":max_err_rel,"Average Absolute Error":avg_err,"Average Relative Error":avg_rel_err,"Average Deviation":deviation}
                 )
+        topcounts = info['snapshot']
+        realTop100 = sorted(real.keys(), key=lambda x:real[x], reverse=True)[:100]
+        top100set = set(realTop100)
+        for snapshot in topcounts:
+            top = snapshot['values']
+            count = 0
+            for i in range(100):
+                if realTop100[i]==top[i]:
+                    count +=1
+            overlap = len( top100set.intersection(top))/100
+            topX.append({"Language":lang,"Hashes":snapshot["hashes"],"Slot Ratio":snapshot["size"],"Overlapping Words":overlap,"Word Matches": count/100})
     if not args.interact:
         if not os.path.exists("graphs"):
             os.mkdir("graphs")    
-    draw3DScatters(results,args.interact)
+    drawPostScatters(results,args.interact)
+    plotSnapshotGraphs(topX,args.interact)

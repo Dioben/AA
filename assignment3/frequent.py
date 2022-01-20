@@ -2,11 +2,10 @@
 #this always stores the top X words regardless of estimated frequency, compares results to words that make up x 
 
 import argparse
-import json
 from collections import Counter
 from minSketch import CountMinSketch
 
-from heapq import heapify,heappushpop,heappush
+from heapq import heapify,heappushpop
 
 
 if __name__ == "__main__":
